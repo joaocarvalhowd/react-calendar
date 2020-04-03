@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import * as dateFns from 'date-fns';
 
-const Calendar = styled.div`
-  background: #fff;
-`;
-
-const CalendarContainer = styled.div`
-  padding: 14px 16px;
-`;
+import Calendar from './components/Calendar';
+import Grid from './components/Grid';
 
 const Box = styled.div`
   display: flex;
@@ -18,7 +13,7 @@ const Box = styled.div`
 `
 
 const CalendarHeader = styled.div`
-  border-bottom: 1px solid #B7B6BC;
+  border-bottom: 1px solid #F2F2F2;
 `
 
 const CalendarHeaderMonth = styled.div`
@@ -33,40 +28,14 @@ const CalendarHeaderMonth = styled.div`
 const CalendarHeaderButton = styled.button`
   max-width: 40px;
   height: 40px;
-  border-radius: 9px;
-  background-color: #F2A026;
+  border-radius: 14px;
+  background-color: #F2F2F2;
   display: block;
   width: 100%;
   text-align: center;
   border: 0;
   outline: none;
-  color: #fff;
-`
-
-const CalendarDaysOfWeek = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-`;
-
-const CalendarDaysOfWeekItem = styled.div`
-  font-size: 12px;
-  color: #333;
-  font-weight: 500;
-  text-align: center;
-  padding-bottom: 14px;
-`;
-
-const CalendarDayCells = styled.div`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-`;
-
-const CalendarDayCell = styled.div`
-  padding: 14px;
-  text-align: center;
-  background-color: ${props => props.isCurrentDate ? "#F2A026" : ''};
-  border-radius: 9px;
-  color: ${props => props.isCurrentDate ? "#fff" : '#000'};;
+  color: #66615C;
 `
 
 const buildDayCells = (selectedDate) => {
@@ -76,17 +45,25 @@ const buildDayCells = (selectedDate) => {
   const monthEnd = dateFns.endOfMonth(monthStart);
   const startDayOfWeek = monthStart.getDay();
 
+  const logsOfMonth = JSON.parse(window.localStorage.getItem('logs')).filter(time => time >= monthStart.getTime() && time <= monthEnd.getTime())
+
   const emptyDaysOfWeek = [...Array(startDayOfWeek)].map(() => ({
     value: '',
+    logsOfDay: [],
     isCurrentDate: false
   }));
 
   const days = [...Array(monthEnd.getDate()).keys()].map(index => {
     const day = ++index;
+    const dayStartTimestamp = new Date(monthStart.getFullYear(), monthStart.getMonth(), day).getTime();
+    const dayEndTimestamp = new Date(monthStart.getFullYear(), monthStart.getMonth(), day, 23, 59, 59).getTime();
+
+    const logsOfDay = logsOfMonth.filter(time => time >= dayStartTimestamp && time <= dayEndTimestamp)
 
     return {
       value: day,
-      isCurrentDate: currentDate.getDate() === day && monthStart.getMonth() === currentDate.getMonth()
+      isCurrentDate: currentDate.getDate() === day && monthStart.getMonth() === currentDate.getMonth(),
+      logsOfDay
     }
   });
 
@@ -97,24 +74,30 @@ const App = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dayCells, setDayCells] = useState([]);
 
+  useState(() => {
+    if (window.localStorage.getItem('logs') === null) {
+      window.localStorage.setItem('logs', JSON.parse([]));
+    }
+  }, []);
+
   useEffect(() => {
     setDayCells(buildDayCells(selectedDate));
   }, [selectedDate]);
 
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-  const prevMonth = () => {
+  const prevMonth = useCallback(() => {
     setSelectedDate(dateFns.subMonths(selectedDate, 1));
-  };
+  }, [selectedDate]);
 
-  const nextMonth = () => {
+  const nextMonth = useCallback(() => {
     setSelectedDate(dateFns.addMonths(selectedDate, 1));
-  };
+  }, [selectedDate]);;
 
   return (
     <Calendar>
       <CalendarHeader>
-        <CalendarContainer>
+        <Calendar.Container>
           <Box>
             <CalendarHeaderButton onClick={prevMonth}>
               <MdKeyboardArrowLeft size={16} />
@@ -126,23 +109,16 @@ const App = () => {
               <MdKeyboardArrowRight size={16} />
             </CalendarHeaderButton>
           </Box>
-        </CalendarContainer>
+        </Calendar.Container>
       </CalendarHeader>
 
-      <CalendarContainer>
-        <CalendarDaysOfWeek>
-          {daysOfWeek.map((item, index) => (
-            <CalendarDaysOfWeekItem key={`day-week-${index}`}>
-              {item}
-            </CalendarDaysOfWeekItem>
-          ))}
-        </CalendarDaysOfWeek>
-        <CalendarDayCells>
-          {dayCells.map((item, index) => (
-            <CalendarDayCell key={`day-${index}`} isCurrentDate={item.isCurrentDate}>{item.value}</CalendarDayCell>
-          ))}
-        </CalendarDayCells>
-      </CalendarContainer>
+      <Calendar.Container>
+        <Grid repeat={7}>
+          <Calendar.DaysOfWeek data={daysOfWeek} />
+
+          <Calendar.Days data={dayCells} />
+        </Grid>
+      </Calendar.Container>
     </Calendar>
   )
 }
