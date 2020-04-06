@@ -131,13 +131,13 @@ const App = () => {
         <CalendarHeader>
           <Calendar.Container>
             <Box>
-              <CalendarHeaderButton onClick={prevMonth}>
+              <CalendarHeaderButton aria-label="Prev month" onClick={prevMonth}>
                 <MdKeyboardArrowLeft size={16} />
               </CalendarHeaderButton>
               <CalendarHeaderMonth>
                 {dateFns.format(selectedDate, 'MMMM yyyy')}
               </CalendarHeaderMonth>
-              <CalendarHeaderButton onClick={nextMonth}>
+              <CalendarHeaderButton aria-label="Next month" onClick={nextMonth}>
                 <MdKeyboardArrowRight size={16} />
               </CalendarHeaderButton>
             </Box>
