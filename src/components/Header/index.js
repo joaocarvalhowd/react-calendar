@@ -3,7 +3,7 @@ import S from './styles';
 
 const Header = () => (
   <S.Header>
-    <h1><span role="img" aria-label="Poop">💩</span> Calendar</h1>
+    <h1><span role="img" aria-label="Poop">💩</span> Calendar ---</h1>
   </S.Header>
 );
 
