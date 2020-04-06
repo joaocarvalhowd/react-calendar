@@ -5,6 +5,7 @@ import Grid from '../Grid';
 
 const DayContainer = styled.div`
   text-align: center;
+  cursor: pointer;
 `
 
 const Day = styled.div`
@@ -24,18 +25,18 @@ const Ball = styled.div`
   background-color: #FFAD55;
 `
 
-const Days = ({ data }) => {
+const Days = ({ data, setActivityResumeDay }) => {
   return data.map((item, index) => (
-    <Grid.Item>
-      <DayContainer>
-        <Day key={`day-${index}`} isCurrentDate={item.isCurrentDate}>
+    <Grid.Item key={`day-${index}`}>
+      <DayContainer onClick={() => setActivityResumeDay(item)}>
+        <Day isCurrentDate={item.isCurrentDate}>
           {item.value}
         </Day>
         {item.logsOfDay.length > 0 && (
           <Ball />
         )}
       </DayContainer>
-    </Grid.Item>
+    </Grid.Item >
   ))
 }
 

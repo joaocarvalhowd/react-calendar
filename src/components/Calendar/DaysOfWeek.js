@@ -13,8 +13,8 @@ const Item = styled.div`
 
 const DaysOfWeek = ({ data }) => {
   return data.map((item, index) => (
-    <Grid.Item>
-      <Item key={`day-week-${index}`}>
+    <Grid.Item key={`day-week-${index}`}>
+      <Item>
         {item}
       </Item>
     </Grid.Item>

@@ -3,14 +3,11 @@ import styled from 'styled-components';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import * as dateFns from 'date-fns';
 
+import Header from './components/Header';
 import Calendar from './components/Calendar';
 import Grid from './components/Grid';
-
-const Box = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-`
+import Box from './components/Box';
+import ActivityResume from './components/ActivityResume';
 
 const CalendarHeader = styled.div`
   border-bottom: 1px solid #F2F2F2;
@@ -58,10 +55,16 @@ const buildDayCells = (selectedDate) => {
     const dayStartTimestamp = new Date(monthStart.getFullYear(), monthStart.getMonth(), day).getTime();
     const dayEndTimestamp = new Date(monthStart.getFullYear(), monthStart.getMonth(), day, 23, 59, 59).getTime();
 
-    const logsOfDay = logsOfMonth.filter(time => time >= dayStartTimestamp && time <= dayEndTimestamp)
+    const formatHour = date => dateFns.format(date, 'HH:mm:ss');
+
+    const logsOfDay = logsOfMonth
+      .filter(time => time >= dayStartTimestamp && time <= dayEndTimestamp)
+      .map(formatHour)
 
     return {
       value: day,
+      timestamp: dayStartTimestamp,
+      dateFormatted: dateFns.format(dayStartTimestamp, 'LLLL d, yyyy'),
       isCurrentDate: currentDate.getDate() === day && monthStart.getMonth() === currentDate.getMonth(),
       logsOfDay
     }
@@ -73,16 +76,25 @@ const buildDayCells = (selectedDate) => {
 const App = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dayCells, setDayCells] = useState([]);
+  const [activityResume, setActivityResume] = useState(null);
 
   useState(() => {
     if (window.localStorage.getItem('logs') === null) {
-      window.localStorage.setItem('logs', JSON.parse([]));
+      window.localStorage.setItem('logs', JSON.stringify([]));
     }
   }, []);
 
   useEffect(() => {
     setDayCells(buildDayCells(selectedDate));
   }, [selectedDate]);
+
+  useEffect(() => {
+    if (activityResume !== null) {
+      const newActivityResume = dayCells.find(item => item.dateFormatted === activityResume.dateFormatted);
+
+      setActivityResume(newActivityResume || activityResume);
+    }
+  }, [activityResume, dayCells])
 
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
@@ -92,34 +104,57 @@ const App = () => {
 
   const nextMonth = useCallback(() => {
     setSelectedDate(dateFns.addMonths(selectedDate, 1));
-  }, [selectedDate]);;
+  }, [selectedDate]);
+
+  const setActivityResumeDay = useCallback((data) => {
+    setActivityResume(data);
+  }, []);
+
+  const addActivity = useCallback((timestamp) => {
+    const currentTime = new Date();
+
+    const time = new Date(timestamp)
+      .setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds())
+
+    const allActivities = JSON.parse(window.localStorage.getItem('logs'));
+
+    window.localStorage.setItem('logs', JSON.stringify([...allActivities, time]));
+
+    setDayCells(buildDayCells(selectedDate));
+  }, [selectedDate]);
 
   return (
-    <Calendar>
-      <CalendarHeader>
+    <>
+      <Header />
+
+      <Calendar>
+        <CalendarHeader>
+          <Calendar.Container>
+            <Box>
+              <CalendarHeaderButton onClick={prevMonth}>
+                <MdKeyboardArrowLeft size={16} />
+              </CalendarHeaderButton>
+              <CalendarHeaderMonth>
+                {dateFns.format(selectedDate, 'MMMM yyyy')}
+              </CalendarHeaderMonth>
+              <CalendarHeaderButton onClick={nextMonth}>
+                <MdKeyboardArrowRight size={16} />
+              </CalendarHeaderButton>
+            </Box>
+          </Calendar.Container>
+        </CalendarHeader>
+
         <Calendar.Container>
-          <Box>
-            <CalendarHeaderButton onClick={prevMonth}>
-              <MdKeyboardArrowLeft size={16} />
-            </CalendarHeaderButton>
-            <CalendarHeaderMonth>
-              {dateFns.format(selectedDate, 'MMMM yyyy')}
-            </CalendarHeaderMonth>
-            <CalendarHeaderButton onClick={nextMonth}>
-              <MdKeyboardArrowRight size={16} />
-            </CalendarHeaderButton>
-          </Box>
+          <Grid repeat={7}>
+            <Calendar.DaysOfWeek data={daysOfWeek} />
+
+            <Calendar.Days data={dayCells} setActivityResumeDay={setActivityResumeDay} />
+          </Grid>
         </Calendar.Container>
-      </CalendarHeader>
+      </Calendar>
 
-      <Calendar.Container>
-        <Grid repeat={7}>
-          <Calendar.DaysOfWeek data={daysOfWeek} />
-
-          <Calendar.Days data={dayCells} />
-        </Grid>
-      </Calendar.Container>
-    </Calendar>
+      <ActivityResume data={activityResume} addActivity={addActivity} />
+    </>
   )
 }
 
