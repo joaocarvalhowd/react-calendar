@@ -33,6 +33,7 @@ const CalendarHeaderButton = styled.button`
   border: 0;
   outline: none;
   color: #66615C;
+  cursor: pointer;
 `
 
 const buildDayCells = (selectedDate) => {
@@ -124,7 +125,7 @@ const App = () => {
   }, [selectedDate]);
 
   return (
-    <>
+    <React.StrictMode>
       <Header />
 
       <Calendar>
@@ -154,7 +155,7 @@ const App = () => {
       </Calendar>
 
       <ActivityResume data={activityResume} addActivity={addActivity} />
-    </>
+    </React.StrictMode>
   )
 }
 
