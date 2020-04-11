@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import PWAPrompt from 'react-ios-pwa-prompt'
 import * as dateFns from 'date-fns';
 
 import Header from './components/Header';
@@ -125,37 +126,41 @@ const App = () => {
   }, [selectedDate]);
 
   return (
-    <React.StrictMode>
-      <Header />
+    <>
+      <React.StrictMode>
+        <Header />
 
-      <Calendar>
-        <CalendarHeader>
+        <Calendar>
+          <CalendarHeader>
+            <Calendar.Container>
+              <Box>
+                <CalendarHeaderButton aria-label="Prev month" onClick={prevMonth}>
+                  <MdKeyboardArrowLeft size={16} />
+                </CalendarHeaderButton>
+                <CalendarHeaderMonth>
+                  {dateFns.format(selectedDate, 'MMMM yyyy')}
+                </CalendarHeaderMonth>
+                <CalendarHeaderButton aria-label="Next month" onClick={nextMonth}>
+                  <MdKeyboardArrowRight size={16} />
+                </CalendarHeaderButton>
+              </Box>
+            </Calendar.Container>
+          </CalendarHeader>
+
           <Calendar.Container>
-            <Box>
-              <CalendarHeaderButton aria-label="Prev month" onClick={prevMonth}>
-                <MdKeyboardArrowLeft size={16} />
-              </CalendarHeaderButton>
-              <CalendarHeaderMonth>
-                {dateFns.format(selectedDate, 'MMMM yyyy')}
-              </CalendarHeaderMonth>
-              <CalendarHeaderButton aria-label="Next month" onClick={nextMonth}>
-                <MdKeyboardArrowRight size={16} />
-              </CalendarHeaderButton>
-            </Box>
+            <Grid repeat={7}>
+              <Calendar.DaysOfWeek data={daysOfWeek} />
+
+              <Calendar.Days data={dayCells} setActivityResumeDay={setActivityResumeDay} />
+            </Grid>
           </Calendar.Container>
-        </CalendarHeader>
+        </Calendar>
 
-        <Calendar.Container>
-          <Grid repeat={7}>
-            <Calendar.DaysOfWeek data={daysOfWeek} />
+        <ActivityResume data={activityResume} addActivity={addActivity} />
+      </React.StrictMode>
 
-            <Calendar.Days data={dayCells} setActivityResumeDay={setActivityResumeDay} />
-          </Grid>
-        </Calendar.Container>
-      </Calendar>
-
-      <ActivityResume data={activityResume} addActivity={addActivity} />
-    </React.StrictMode>
+      <PWAPrompt />
+    </>
   )
 }
 

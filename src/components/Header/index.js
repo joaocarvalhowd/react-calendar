@@ -1,9 +1,13 @@
 import React from 'react';
+import { ReactComponent as Logo } from '../../images/logo.svg';
 import S from './styles';
 
 const Header = () => (
   <S.Header>
-    <h1><span role="img" aria-label="Poop">💩</span> Calendar</h1>
+    <Logo />
+    <h1>
+      Calendar
+    </h1>
   </S.Header>
 );
 
